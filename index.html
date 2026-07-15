@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which medical plan for our family of 4?</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234c5cf0'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f6f7fb; --card:#ffffff; --text:#16181f; --dim:#5a6072; --line:#d9dce6;
+  --accent:#4c5cf0; --good:#0d8a6a; --warn:#b3261e; --chip:#eef0fa;
+  --p1:#2f6fd6; --p2:#0d8a6a; --p3:#c22f5d; --p4:#b26a00;
+  --hl:#fff6d9; --hlborder:#e0a800;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0e1016; --card:#171a24; --text:#e8eaf2; --dim:#9aa0b4; --line:#2a2e3d;
+    --accent:#8b96ff; --good:#2fe6c5; --warn:#ff8f88; --chip:#232738;
+    --p1:#6ea8ff; --p2:#2fe6c5; --p3:#ff6b9d; --p4:#ffb454;
+    --hl:#2b2a1a; --hlborder:#c9a72a;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px;max-width:1080px;margin:0 auto}
+header{margin:8px 0 20px}
+h1{font-size:clamp(22px,4.5vw,32px);line-height:1.2;margin-bottom:8px}
+.summary{color:var(--dim);font-size:15px}
+.summary b{color:var(--text)}
+h2{font-size:20px;margin:28px 0 12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;position:relative}
+.card h3{font-size:17px;margin-bottom:2px}
+.badge{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;margin:4px 0 8px}
+.badge.best{background:var(--good);color:#fff}
+.badge.ceiling{background:var(--accent);color:#fff}
+.badge.never{background:var(--warn);color:#fff}
+@media (prefers-color-scheme: dark){
+  .badge.best,.badge.ceiling{color:#0e1016}
+}
+.card dl{font-size:14px}
+.card dl div{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.card dl div:last-child{border-bottom:none}
+.card dt{color:var(--dim)}
+.card dd{font-weight:600;text-align:right}
+.worst{margin-top:8px;font-size:13px;color:var(--dim)}
+.worst b{color:var(--text)}
+section.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:24px}
+label[for=charges]{font-weight:700;display:block;margin-bottom:6px}
+.sliderrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+input[type=range]{flex:1;min-width:200px;accent-color:var(--accent);height:32px}
+#chargeVal{font-size:22px;font-weight:800;min-width:110px}
+#note100k{font-size:13px;color:var(--dim);margin-top:2px;min-height:18px}
+.totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.tot{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.tot .nm{font-size:13px;color:var(--dim)}
+.tot .amt{font-size:19px;font-weight:800;margin-top:2px}
+.tot.win{background:var(--hl);border-color:var(--hlborder)}
+.tot.win .tag{display:block;font-size:11px;font-weight:800;color:var(--hlborder);letter-spacing:.06em}
+#verdict{margin-top:12px;font-size:15px}
+#verdict b{font-size:16px}
+.chartwrap{position:relative;height:340px;margin-top:8px}
+@media (max-width:600px){ .chartwrap{height:280px} }
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.presets button{background:var(--chip);color:var(--text);border:1px solid var(--line);border-radius:10px;
+  padding:10px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.presets button:hover,.presets button:focus-visible{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
+#presetDesc{margin-top:10px;font-size:14px;color:var(--dim);min-height:20px}
+.guide p{margin:8px 0}
+.guide b.p4{color:var(--p4)} .guide b.p2{color:var(--p2)} .guide b.p1{color:var(--p1)} .guide b.p3{color:var(--p3)}
+.never-callout{background:var(--chip);border-left:4px solid var(--warn);padding:10px 12px;border-radius:0 10px 10px 0;margin-top:10px;font-size:14px}
+footer{margin:26px 0 40px;font-size:12.5px;color:var(--dim);line-height:1.6}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Which medical plan for our family of 4?</h1>
+  <p class="summary">Short version: <b>Plan 4</b> wins below ~$5,600 of family medical charges, <b>Plan 1</b> wins from ~$5,600 to ~$14,500, and <b>Plan 2</b> wins above ~$14,500. <b>Plan 3 is never the cheapest at any spending level.</b></p>
+</header>
+
+<h2>The four plans</h2>
+<div class="cards" id="cards"></div>
+
+<section class="panel" aria-labelledby="sliderTitle">
+  <h2 id="sliderTitle" style="margin-top:0">Try a scenario</h2>
+  <label for="charges">Estimated family medical charges this year</label>
+  <div class="sliderrow">
+    <input type="range" id="charges" min="0" max="60000" step="500" value="5000"
+      aria-describedby="note100k" aria-valuetext="$5,000">
+    <span id="chargeVal">$5,000</span>
+  </div>
+  <div id="note100k" role="note"></div>
+  <div class="totals" id="totals"></div>
+  <p id="verdict" aria-live="polite"></p>
+
+  <div class="chartwrap">
+    <canvas id="chart" role="img"
+      aria-label="Line chart of total annual cost (premium plus out of pocket) for each of the four plans as family medical charges rise from zero to forty thousand dollars. Plan 4 is lowest at low spending, Plan 1 is lowest for moderate spending, Plan 2 is lowest for high spending, and Plan 3 is never the lowest."></canvas>
+  </div>
+
+  <h2>Preset scenarios</h2>
+  <div class="presets" id="presets" role="group" aria-label="Preset medical spending scenarios"></div>
+  <p id="presetDesc"></p>
+</section>
+
+<section class="panel guide" aria-labelledby="guideTitle">
+  <h2 id="guideTitle" style="margin-top:0">Decision guide</h2>
+  <p><b class="p4">Pick Plan 4 (HDHP)</b> if the family is generally healthy and you'll fund an HSA. It has the lowest premium, and the HSA adds tax savings this page doesn't even count.</p>
+  <p><b class="p2">Pick Plan 2</b> if a big medical year is likely (surgery, a new baby) or you value predictability: its worst case is the lowest of all four plans, and past the deductible you pay nothing.</p>
+  <p><b class="p1">Plan 1</b> only makes sense for reliably moderate usage (roughly $5,600&ndash;$14,500 in charges) &mdash; and it beats the others by at most a few hundred dollars there.</p>
+  <div class="never-callout"><b class="p3">Never pick Plan 3.</b> At every spending level from $0 to catastrophic, at least one other plan is cheaper. It combines a mid-range premium with the highest deductible and the highest out-of-pocket ceiling.</div>
+</section>
+
+<footer>
+  <b>Assumptions &amp; caveats:</b> premiums assume 26 pay periods per year. This is a simplified family-level model: copay accumulation, prescription tiers, and network differences are ignored (Plan 2&ndash;4 copays treated as negligible; Plan 1 modeled as deductible + 20% coinsurance to the out-of-pocket max). Preventive care is assumed free on all plans. Charges means billed, covered, in-network expenses. Not financial or benefits advice &mdash; check the official plan documents before enrolling.
+</footer>
+
+<script>
+"use strict";
+
+// ---------- plan data (hardcoded) ----------
+const PLANS = [
+  { key:"p1", name:"Plan 1", premPP:341.31, annual:8874.06, copay:"$25", coins:"20%",
+    dedFam:2000, dedTxt:"$1,000 / $2,000", oopFam:9000, oopTxt:"$4,500 / $9,000",
+    color:css("--p1"), dash:[] },
+  { key:"p2", name:"Plan 2", premPP:283.50, annual:7371.00, copay:"$30", coins:"0%",
+    dedFam:6000, dedTxt:"$3,000 / $6,000", oopFam:9000, oopTxt:"$4,500 / $9,000",
+    color:css("--p2"), dash:[8,4], badge:["ceiling","Best ceiling / big-year pick"] },
+  { key:"p3", name:"Plan 3", premPP:247.26, annual:6428.76, copay:"$40", coins:"0%",
+    dedFam:14300, dedTxt:"$7,150 / $14,300", oopFam:15200, oopTxt:"$7,600 / $15,200",
+    color:css("--p3"), dash:[2,3], badge:["never","Never optimal"] },
+  { key:"p4", name:"Plan 4 (HDHP)", premPP:229.56, annual:5968.56, copay:"$0", coins:"0%",
+    dedFam:12700, dedTxt:"$6,350 / $12,700", oopFam:12700, oopTxt:"$6,350 / $12,700",
+    color:css("--p4"), dash:[12,4,2,4], badge:["best","Best if healthy (HSA-eligible)"] },
+];
+
+// ---------- cost model ----------
+function oop(planKey, x){
+  switch(planKey){
+    case "p1": return Math.min(Math.min(x, 2000) + Math.max(0, 0.20 * (x - 2000)), 9000);
+    case "p2": return Math.min(Math.min(x, 6000), 9000);
+    case "p3": return Math.min(Math.min(x, 14300), 15200);
+    case "p4": return Math.min(x, 12700);
+  }
+}
+const total = (p, x) => p.annual + oop(p.key, x);
+
+const fmt = n => "$" + Math.round(n).toLocaleString("en-US");
+
+function css(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#888";
+}
+
+// ---------- plan cards ----------
+const cardsEl = document.getElementById("cards");
+for(const p of PLANS){
+  const worst = p.annual + p.oopFam;
+  const el = document.createElement("div");
+  el.className = "card";
+  el.style.borderTop = "4px solid " + p.color;
+  el.innerHTML = `
+    <h3>${p.name}</h3>
+    ${p.badge ? `<span class="badge ${p.badge[0]}">${p.badge[1]}</span>` : `<span class="badge" style="visibility:hidden">-</span>`}
+    <dl>
+      <div><dt>Premium / pay period</dt><dd>$${p.premPP.toFixed(2)}</dd></div>
+      <div><dt>Annual premium</dt><dd>${fmt(p.annual)}</dd></div>
+      <div><dt>Copay</dt><dd>${p.copay}</dd></div>
+      <div><dt>Coinsurance</dt><dd>${p.coins}</dd></div>
+      <div><dt>Deductible (ind / fam)</dt><dd>${p.dedTxt}</dd></div>
+      <div><dt>OOP max (ind / fam)</dt><dd>${p.oopTxt}</dd></div>
+    </dl>
+    <p class="worst">Worst-case annual total: <b>${fmt(worst)}</b></p>`;
+  cardsEl.appendChild(el);
+}
+
+// ---------- scenario state ----------
+let scenario = 5000;   // source of truth; presets may exceed the slider range
+const slider = document.getElementById("charges");
+const chargeVal = document.getElementById("chargeVal");
+const note = document.getElementById("note100k");
+const totalsEl = document.getElementById("totals");
+const verdict = document.getElementById("verdict");
+
+function renderTotals(){
+  chargeVal.textContent = fmt(scenario);
+  slider.setAttribute("aria-valuetext", fmt(scenario) + " in family medical charges");
+  note.textContent = scenario > +slider.max
+    ? "Showing " + fmt(scenario) + " (beyond the slider range; out-of-pocket caps make the totals flat up here)."
+    : "";
+
+  const rows = PLANS.map(p => ({ p, t: total(p, scenario) }))
+                    .sort((a, b) => a.t - b.t);
+  const win = rows[0], second = rows[1];
+
+  totalsEl.innerHTML = "";
+  for(const p of PLANS){
+    const t = total(p, scenario);
+    const isWin = p.key === win.p.key;
+    const d = document.createElement("div");
+    d.className = "tot" + (isWin ? " win" : "");
+    d.style.borderTop = "3px solid " + p.color;
+    d.innerHTML = (isWin ? '<span class="tag">CHEAPEST</span>' : "")
+      + `<span class="nm">${p.name}</span><span class="amt">${fmt(t)}</span>`;
+    totalsEl.appendChild(d);
+  }
+  verdict.innerHTML = `At ${fmt(scenario)} in charges, <b style="color:${win.p.color}">${win.p.name}</b> is cheapest &mdash; ` +
+    `<b>${fmt(second.t - win.t)}</b> less than the runner-up (${second.p.name}).`;
+  if(chart){ chart.update("none"); }
+}
+
+slider.addEventListener("input", () => { scenario = +slider.value; renderTotals(); });
+
+// ---------- presets ----------
+const PRESETS = [
+  { amt: 1500,   label:"Healthy year - $1,500",  desc:"Checkups plus a few sick visits." },
+  { amt: 5000,   label:"Moderate - $5,000",      desc:"Stitches, labs, and regular meds." },
+  { amt: 10000,  label:"Rough year - $10,000",   desc:"An ER visit and a broken arm." },
+  { amt: 30000,  label:"Big event - $30,000",    desc:"Surgery or a new baby." },
+  { amt: 100000, label:"Catastrophic - $100,000",desc:"Major hospitalization. Every plan hits its out-of-pocket ceiling, so only the caps matter." },
+];
+const presetsEl = document.getElementById("presets");
+const presetDesc = document.getElementById("presetDesc");
+for(const pr of PRESETS){
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = pr.label;
+  b.addEventListener("click", () => {
+    scenario = pr.amt;
+    slider.value = Math.min(pr.amt, +slider.max);
+    presetDesc.textContent = pr.desc;
+    renderTotals();
+  });
+  presetsEl.appendChild(b);
+}
+
+// ---------- chart ----------
+const CHART_MAX = 40000, STEP = 500;
+const xs = [];
+for(let x = 0; x <= CHART_MAX; x += STEP) xs.push(x);
+
+const dark = matchMedia("(prefers-color-scheme: dark)");
+function chartColors(){
+  return dark.matches
+    ? { grid:"rgba(255,255,255,.08)", tick:"#9aa0b4", marker:"#e8eaf2" }
+    : { grid:"rgba(0,0,0,.07)",  tick:"#5a6072", marker:"#16181f" };
+}
+
+const markerPlugin = {
+  id: "scenarioMarker",
+  afterDatasetsDraw(c){
+    const x = Math.min(scenario, CHART_MAX);
+    const px = c.scales.x.getPixelForValue(x);
+    const { top, bottom } = c.chartArea;
+    const ctx = c.ctx;
+    ctx.save();
+    ctx.strokeStyle = chartColors().marker;
+    ctx.setLineDash([5,4]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(px, top); ctx.lineTo(px, bottom); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = chartColors().marker;
+    ctx.font = "700 11px system-ui";
+    ctx.textAlign = px > c.width - 90 ? "right" : "left";
+    ctx.fillText("your scenario" + (scenario > CHART_MAX ? " (" + fmt(scenario) + ")" : ""),
+                 px + (px > c.width - 90 ? -6 : 6), top + 12);
+    ctx.restore();
+  }
+};
+
+let chart = null;
+function buildChart(){
+  const cc = chartColors();
+  if(chart) chart.destroy();
+  chart = new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: {
+      labels: xs,
+      datasets: PLANS.map(p => ({
+        label: p.name,
+        data: xs.map(x => total(p, x)),
+        borderColor: p.color,
+        backgroundColor: p.color,
+        borderDash: p.dash,
+        borderWidth: 2.4,
+        pointRadius: 0,
+        pointHitRadius: 8,
+        tension: 0,
+      })),
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: { type: "linear", min: 0, max: CHART_MAX,
+             title: { display: true, text: "Family medical charges ($)", color: cc.tick },
+             ticks: { color: cc.tick, callback: v => "$" + (v/1000) + "k" },
+             grid: { color: cc.grid } },
+        y: { title: { display: true, text: "Total annual cost ($)", color: cc.tick },
+             ticks: { color: cc.tick, callback: v => "$" + (v/1000) + "k" },
+             grid: { color: cc.grid } },
+      },
+      plugins: {
+        legend: { labels: { color: cc.tick, usePointStyle: false } },
+        tooltip: {
+          callbacks: {
+            title: items => "Charges: " + fmt(items[0].parsed.x),
+            label: item => item.dataset.label + ": " + fmt(item.parsed.y),
+          },
+        },
+      },
+    },
+    plugins: [markerPlugin],
+  });
+}
+dark.addEventListener("change", buildChart);
+
+buildChart();
+renderTotals();
+presetDesc.textContent = "";
+
+// console self-test of the spot checks
+(function(){
+  const cases = { 10000: [12474, 13371, 16429, 15969], 30000: [16474, 13371, 20729, 18669] };
+  for(const [x, want] of Object.entries(cases)){
+    PLANS.forEach((p, i) => {
+      const got = Math.round(total(p, +x));
+      if(got !== want[i]) console.error("SPOT CHECK FAIL", p.name, "at", x, "got", got, "want", want[i]);
+    });
+  }
+})();
+</script>
+</body>
+</html>
