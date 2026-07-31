@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Which medical plan for our family of 4?</title>
+<title>Our 2026 health coverage</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234c5cf0'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
 <style>
@@ -12,6 +12,8 @@
   --accent:#4c5cf0; --good:#0d8a6a; --warn:#b3261e; --chip:#eef0fa;
   --p1:#2f6fd6; --p2:#0d8a6a; --p3:#c22f5d; --p4:#b26a00;
   --hl:#fff6d9; --hlborder:#e0a800;
+  --teal:#0d7a86; --freebg:#e4f4ec; --freetx:#0d6a4f;
+  --paybg:#fdf0dd; --paytx:#9a6410; --aftbg:#e9ecff; --afttx:#3a48c8;
 }
 @media (prefers-color-scheme: dark){
   :root{
@@ -19,15 +21,105 @@
     --accent:#8b96ff; --good:#2fe6c5; --warn:#ff8f88; --chip:#232738;
     --p1:#6ea8ff; --p2:#2fe6c5; --p3:#ff6b9d; --p4:#ffb454;
     --hl:#2b2a1a; --hlborder:#c9a72a;
+    --teal:#4fd0dd; --freebg:#12332a; --freetx:#7fe6bf;
+    --paybg:#33290f; --paytx:#ffcf87; --aftbg:#1e2450; --afttx:#aeb7ff;
   }
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px;max-width:1080px;margin:0 auto}
-header{margin:8px 0 20px}
-h1{font-size:clamp(22px,4.5vw,32px);line-height:1.2;margin-bottom:8px}
+header{margin:8px 0 16px}
+h1{font-size:clamp(22px,4.5vw,32px);line-height:1.2;margin-bottom:8px;text-wrap:balance}
 .summary{color:var(--dim);font-size:15px}
 .summary b{color:var(--text)}
 h2{font-size:20px;margin:28px 0 12px}
+
+/* ---- tabs ---- */
+.tabs{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;border-bottom:3px solid transparent;color:var(--dim);
+  font:inherit;font-weight:600;font-size:15px;padding:10px 4px;cursor:pointer;margin-bottom:-1px}
+.tab[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.view[hidden]{display:none}
+
+/* ---- coverage view ---- */
+.lead{font-size:17px;color:var(--text);max-width:60ch}
+.lead .muted{color:var(--dim)}
+.jump{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@media(max-width:520px){.jump{grid-template-columns:1fr}}
+.jumpcard{display:block;text-decoration:none;color:inherit;background:var(--card);
+  border:1px solid var(--line);border-radius:14px;padding:16px;border-top:4px solid var(--accent)}
+.jumpcard.dental{border-top-color:var(--teal)}
+.jumpcard:hover,.jumpcard:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.jumpcard .kind{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.jumpcard h3{font-size:19px;margin:2px 0 6px}
+.jumpcard p{font-size:14px;color:var(--dim)}
+
+.block{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:18px}
+.block > h2{margin:0 0 4px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal)}
+.eyebrow.med{color:var(--accent)}
+
+.bignum{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0 4px}
+.bignum .n{flex:1;min-width:140px;background:var(--chip);border-radius:12px;padding:14px 16px}
+.bignum .n .amt{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.bignum .n .lbl{font-size:13px;color:var(--dim);margin-top:4px}
+
+.oneline{font-size:16px;margin:14px 0 2px;padding:12px 14px;border-left:4px solid var(--accent);
+  background:var(--chip);border-radius:0 12px 12px 0}
+
+.steps{display:grid;gap:10px;margin-top:14px}
+.step{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.step .k{width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;
+  font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+@media (prefers-color-scheme: dark){.step .k{color:#0e1016}}
+.step .t{font-size:15px}
+.step .t b{font-weight:700}
+
+.paylist{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.payrow{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:11px 14px;border-bottom:1px solid var(--line)}
+.payrow:last-child{border-bottom:none}
+.payrow .what{font-size:15px}
+.payrow .what small{display:block;color:var(--dim);font-size:12.5px;margin-top:1px}
+.pill{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.pill.free{background:var(--freebg);color:var(--freetx)}
+.pill.pay{background:var(--paybg);color:var(--paytx)}
+.pill.after{background:var(--aftbg);color:var(--afttx)}
+
+.hsa{margin-top:16px;background:var(--freebg);border:1px solid var(--freetx);border-radius:14px;padding:16px}
+.hsa h3{font-size:16px;color:var(--freetx);margin-bottom:6px}
+.hsa p{font-size:14.5px}
+.hsa ul{margin:8px 0 0 18px;font-size:14px}
+
+.tiers{display:grid;gap:10px;margin-top:14px}
+.tier{display:grid;grid-template-columns:100px 1fr auto;gap:12px;align-items:center}
+@media(max-width:520px){.tier{grid-template-columns:78px 1fr auto}}
+.tier .pct{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.tier .bar{height:12px;border-radius:99px;background:var(--chip);overflow:hidden}
+.tier .bar i{display:block;height:100%;border-radius:99px;background:var(--teal)}
+.tier .nm{font-size:14px}
+.tier .nm small{display:block;color:var(--dim);font-size:12.5px}
+
+.examples{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+@media(max-width:640px){.examples{grid-template-columns:1fr}}
+.ex{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.ex h4{font-size:15px;margin-bottom:8px}
+.ex .row{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;color:var(--dim)}
+.ex .row b{color:var(--text);font-variant-numeric:tabular-nums}
+.ex .youpay{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);
+  display:flex;justify-content:space-between;font-size:14px}
+.ex .youpay b{font-size:18px;font-variant-numeric:tabular-nums}
+
+.notcov{margin-top:14px;font-size:14.5px}
+.notcov .list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.notcov .list span{background:var(--chip);border-radius:8px;padding:5px 10px;font-size:13px;color:var(--dim)}
+.tip{margin-top:12px;font-size:14px;background:var(--aftbg);color:var(--afttx);
+  border-radius:10px;padding:10px 12px}
+.watch{margin-top:12px;font-size:14px;border-left:4px solid var(--warn);background:var(--chip);
+  padding:10px 12px;border-radius:0 10px 10px 0}
+.watch b{color:var(--warn)}
+
+/* ---- compare view (existing tool) ---- */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;position:relative}
 .card h3{font-size:17px;margin-bottom:2px}
@@ -35,9 +127,7 @@ h2{font-size:20px;margin:28px 0 12px}
 .badge.best{background:var(--good);color:#fff}
 .badge.ceiling{background:var(--accent);color:#fff}
 .badge.never{background:var(--warn);color:#fff}
-@media (prefers-color-scheme: dark){
-  .badge.best,.badge.ceiling{color:#0e1016}
-}
+@media (prefers-color-scheme: dark){ .badge.best,.badge.ceiling{color:#0e1016} }
 .card dl{font-size:14px}
 .card dl div{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}
 .card dl div:last-child{border-bottom:none}
@@ -75,67 +165,224 @@ footer{margin:26px 0 40px;font-size:12.5px;color:var(--dim);line-height:1.6}
 <body>
 
 <header>
-  <h1>Which medical plan for our family of 4?</h1>
-  <p class="summary">Short version: <b>Plan 4</b> wins below ~$5,600 of family medical charges, <b>Plan 1</b> wins from ~$5,600 to ~$14,500, and <b>Plan 2</b> wins above ~$14,500. <b>Plan 3 is never the cheapest at any spending level.</b></p>
+  <h1 id="pageTitle">Our 2026 health coverage</h1>
+  <p class="summary" id="pageSub">A plain-English guide to the medical and dental plans, plus the tool for comparing plans at enrollment.</p>
 </header>
 
-<h2>The four plans</h2>
-<div class="cards" id="cards"></div>
+<div class="tabs" role="tablist" aria-label="Views">
+  <button class="tab" id="tab-cov" role="tab" aria-selected="true" aria-controls="view-cov">Your coverage, explained</button>
+  <button class="tab" id="tab-cmp" role="tab" aria-selected="false" aria-controls="view-cmp">Compare plans</button>
+</div>
 
-<section class="panel" aria-labelledby="sliderTitle">
-  <h2 id="sliderTitle" style="margin-top:0">Try a scenario</h2>
-  <label for="charges">Estimated family medical charges this year</label>
-  <div class="sliderrow">
-    <input type="range" id="charges" min="0" max="60000" step="500" value="5000"
-      aria-describedby="note100k" aria-valuetext="$5,000">
-    <span id="chargeVal">$5,000</span>
+<!-- ---- COVERAGE VIEW ---- -->
+<div class="view" id="view-cov" role="tabpanel" aria-labelledby="tab-cov">
+
+  <p class="lead">You have <b>two plans through Cigna</b> for 2026: a <b>medical</b> plan and a <b>dental</b> plan. Here is what each one covers and what you actually pay. <span class="muted">Everything below is for in-network care, which is almost always what you want.</span></p>
+
+  <div class="jump">
+    <a class="jumpcard" href="#medical">
+      <span class="kind">Medical</span>
+      <h3>High-deductible plan + HSA</h3>
+      <p>Preventive care is free. You cover the rest up to a yearly cap, then the plan pays 100%.</p>
+    </a>
+    <a class="jumpcard dental" href="#dental">
+      <span class="kind">Dental</span>
+      <h3>Cigna Dental &mdash; Low Plan</h3>
+      <p>Cleanings free. The plan pays 70% of fillings and 50% of crowns, up to $1,000 a year.</p>
+    </a>
   </div>
-  <div id="note100k" role="note"></div>
-  <div class="totals" id="totals"></div>
-  <p id="verdict" aria-live="polite"></p>
 
-  <div class="chartwrap">
-    <canvas id="chart" role="img"
-      aria-label="Line chart of total annual cost (premium plus out of pocket) for each of the four plans as family medical charges rise from zero to forty thousand dollars. Plan 4 is lowest at low spending, Plan 1 is lowest for moderate spending, Plan 2 is lowest for high spending, and Plan 3 is never the lowest."></canvas>
-  </div>
+  <!-- MEDICAL -->
+  <section class="block" id="medical">
+    <span class="eyebrow med">Medical &middot; Cigna Open Access Plus (HDHP)</span>
+    <h2>Your medical plan, in one idea</h2>
+    <p class="oneline">You pay the full <b>discounted</b> price for most care until you reach the yearly cap. After that, the plan pays <b>100%</b> of covered in-network care for the rest of the year.</p>
 
-  <h2>Preset scenarios</h2>
-  <div class="presets" id="presets" role="group" aria-label="Preset medical spending scenarios"></div>
-  <p id="presetDesc"></p>
-</section>
+    <div class="bignum">
+      <div class="n"><div class="amt">$6,350</div><div class="lbl">Yearly cap &mdash; one person</div></div>
+      <div class="n"><div class="amt">$12,700</div><div class="lbl">Yearly cap &mdash; whole family</div></div>
+    </div>
+    <p style="font-size:13.5px;color:var(--dim);margin-top:4px">Here the deductible and the out-of-pocket max are the <b>same number</b> &mdash; so there is really just one figure to keep in mind. Any single person on the family plan never pays more than $6,350 of it themselves.</p>
 
-<section class="panel guide" aria-labelledby="guideTitle">
-  <h2 id="guideTitle" style="margin-top:0">Decision guide</h2>
-  <p><b class="p4">Pick Plan 4 (HDHP)</b> if the family is generally healthy and you'll fund an HSA. It has the lowest premium, and the HSA adds tax savings this page doesn't even count.</p>
-  <p><b class="p2">Pick Plan 2</b> if a big medical year is likely (surgery, a new baby) or you value predictability: its worst case is the lowest of all four plans, and past the deductible you pay nothing.</p>
-  <p><b class="p1">Plan 1</b> only makes sense for reliably moderate usage (roughly $5,600&ndash;$14,500 in charges) &mdash; and it beats the others by at most a few hundred dollars there.</p>
-  <div class="never-callout"><b class="p3">Never pick Plan 3.</b> At every spending level from $0 to catastrophic, at least one other plan is cheaper. It combines a mid-range premium with the highest deductible and the highest out-of-pocket ceiling.</div>
-</section>
+    <div class="steps">
+      <div class="step"><div class="k">1</div><div class="t"><b>Preventive care is free from day one.</b> Annual check-ups, recommended screenings, vaccines, and certain preventive medicines cost you nothing in-network &mdash; even before you have spent anything.</div></div>
+      <div class="step"><div class="k">2</div><div class="t"><b>For everything else, you pay the discounted price</b> until your spending reaches the cap above. This is what the <b>HSA</b> is for &mdash; tax-free money to pay these costs.</div></div>
+      <div class="step"><div class="k">3</div><div class="t"><b>Once you hit the cap, you are done.</b> The plan pays 100% of covered in-network care for the rest of the calendar year. In January it starts over.</div></div>
+    </div>
 
-<footer>
-  <b>Assumptions &amp; caveats:</b> premiums assume 26 pay periods per year. This is a simplified family-level model: copay accumulation, prescription tiers, and network differences are ignored (Plan 2&ndash;4 copays treated as negligible; Plan 1 modeled as deductible + 20% coinsurance to the out-of-pocket max). Preventive care is assumed free on all plans. Charges means billed, covered, in-network expenses. Not financial or benefits advice &mdash; check the official plan documents before enrolling.
+    <h3 style="font-size:16px;margin:20px 0 4px">What you pay for common things</h3>
+    <div class="paylist">
+      <div class="payrow"><div class="what">Yearly check-up &amp; screenings</div><span class="pill free">Free</span></div>
+      <div class="payrow"><div class="what">Doctor or specialist visit<small>No referral needed to see a specialist</small></div><span class="pill after">Price, then free after the cap</span></div>
+      <div class="payrow"><div class="what">Prescriptions<small>All tiers, up to a 90-day supply</small></div><span class="pill after">Price, then free after the cap</span></div>
+      <div class="payrow"><div class="what">Lab work &amp; X-rays</div><span class="pill after">Price, then free after the cap</span></div>
+      <div class="payrow"><div class="what">Urgent care</div><span class="pill after">Price, then free after the cap</span></div>
+      <div class="payrow"><div class="what">Emergency room<small>Covered even out-of-network, at in-network rates</small></div><span class="pill after">Counts toward the cap</span></div>
+      <div class="payrow"><div class="what">Mental health &amp; therapy</div><span class="pill after">Same as a normal visit</span></div>
+      <div class="payrow"><div class="what">Having a baby</div><span class="pill after">Covered, counts toward the cap</span></div>
+    </div>
+
+    <div class="hsa">
+      <h3>The HSA that comes with this plan</h3>
+      <p>A Health Savings Account is a tax-free wallet for medical costs. It is the piece that makes a high-deductible plan work.</p>
+      <ul>
+        <li>Money goes in <b>tax-free</b>, grows tax-free, and pays for medical costs tax-free.</li>
+        <li>Use it for the spending in step 2 &mdash; visits, prescriptions, labs.</li>
+        <li>Whatever you don't use <b>rolls over every year and stays yours</b>, even if you change jobs.</li>
+      </ul>
+    </div>
+
+    <div class="watch"><b>Two things to watch:</b> stay <b>in-network</b> (out-of-network costs far more), and if a hospital or specialist wants to do something out-of-network, get it pre-approved or there is a $250 penalty.</div>
+
+    <div class="notcov">
+      <b>Not covered by the medical plan:</b>
+      <div class="list">
+        <span>Routine eye exams &amp; glasses</span><span>Adult dental</span><span>Hearing aids</span>
+        <span>Cosmetic surgery</span><span>Weight-loss programs</span><span>Bariatric surgery</span><span>Long-term care</span>
+      </div>
+      <div class="tip">Dental is the separate plan below. There is <b>no vision plan</b> in this package &mdash; if you want eye exams and glasses covered, you would need to add a standalone vision plan.</div>
+    </div>
+  </section>
+
+  <!-- DENTAL -->
+  <section class="block" id="dental">
+    <span class="eyebrow">Dental &middot; Cigna Dental Choice (Low Plan)</span>
+    <h2>Your dental plan</h2>
+    <p style="font-size:15.5px;margin-top:4px">The plan pays up to <b>$1,000 per person per year</b>. There's a <b>$100</b> deductible per person ($300 for the family) &mdash; but it does <b>not</b> apply to cleanings and check-ups, which are always free.</p>
+
+    <div class="tiers">
+      <div class="tier">
+        <div class="pct" style="color:var(--good)">100%</div>
+        <div class="bar"><i style="width:100%;background:var(--good)"></i></div>
+        <div class="nm">Cleanings, exams, X-rays<small>Twice-yearly cleanings, fluoride for kids. No deductible.</small></div>
+      </div>
+      <div class="tier">
+        <div class="pct" style="color:var(--teal)">70%</div>
+        <div class="bar"><i style="width:70%"></i></div>
+        <div class="nm">Fillings, extractions, root canals, gum care<small>Plan pays 70%, you pay 30%, after the $100.</small></div>
+      </div>
+      <div class="tier">
+        <div class="pct" style="color:var(--p4)">50%</div>
+        <div class="bar"><i style="width:50%;background:var(--p4)"></i></div>
+        <div class="nm">Crowns, dentures, bridges, implants<small>Plan pays 50%, you pay 50%, after the $100.</small></div>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:14px">Use an <b>in-network (contracted) dentist</b> to pay the least. The $1,000 yearly limit covers routine care well; big work like a crown can use up a lot of it, so spread major work across calendar years when you can.</div>
+  </section>
+
+  <!-- EXAMPLES -->
+  <section class="block">
+    <span class="eyebrow med">Real examples</span>
+    <h2>What a year might actually cost</h2>
+    <p style="font-size:14px;color:var(--dim);margin-top:2px">Cigna's own examples for this medical plan. Your real costs vary, but these show the shape of it.</p>
+    <div class="examples">
+      <div class="ex">
+        <h4>Having a baby</h4>
+        <div class="row"><span>Total billed</span><b>$12,700</b></div>
+        <div class="row"><span>Plan pays</span><b>$6,330</b></div>
+        <div class="youpay"><span>You pay about</span><b>$6,370</b></div>
+      </div>
+      <div class="ex">
+        <h4>Managing diabetes for a year</h4>
+        <div class="row"><span>Total billed</span><b>$5,600</b></div>
+        <div class="row"><span>Plan pays</span><b>$300</b></div>
+        <div class="youpay"><span>You pay about</span><b>$5,300</b></div>
+      </div>
+      <div class="ex">
+        <h4>A simple fracture (ER + follow-up)</h4>
+        <div class="row"><span>Total billed</span><b>$2,800</b></div>
+        <div class="row"><span>Plan pays</span><b>$0</b></div>
+        <div class="youpay"><span>You pay about</span><b>$2,800</b></div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--dim);margin-top:12px">In the first case you hit the cap, so the plan covers the rest. In the last case the bill is under the cap, so you pay it &mdash; but never more than $6,350 no matter what.</p>
+  </section>
+
+</div>
+
+<!-- ---- COMPARE VIEW (enrollment tool) ---- -->
+<div class="view" id="view-cmp" role="tabpanel" aria-labelledby="tab-cmp" hidden>
+
+  <p class="summary" style="margin-bottom:8px">Short version: <b>Plan 4</b> wins below ~$5,600 of family medical charges, <b>Plan 1</b> wins from ~$5,600 to ~$14,500, and <b>Plan 2</b> wins above ~$14,500. <b>Plan 3 is never the cheapest at any spending level.</b></p>
+
+  <h2>The four plans</h2>
+  <div class="cards" id="cards"></div>
+
+  <section class="panel" aria-labelledby="sliderTitle">
+    <h2 id="sliderTitle" style="margin-top:0">Try a scenario</h2>
+    <label for="charges">Estimated family medical charges this year</label>
+    <div class="sliderrow">
+      <input type="range" id="charges" min="0" max="60000" step="500" value="5000"
+        aria-describedby="note100k" aria-valuetext="$5,000">
+      <span id="chargeVal">$5,000</span>
+    </div>
+    <div id="note100k" role="note"></div>
+    <div class="totals" id="totals"></div>
+    <p id="verdict" aria-live="polite"></p>
+
+    <div class="chartwrap">
+      <canvas id="chart" role="img"
+        aria-label="Line chart of total annual cost for each of the four plans as family medical charges rise. Plan 4 is lowest at low spending, Plan 1 for moderate spending, Plan 2 for high spending, and Plan 3 is never the lowest."></canvas>
+    </div>
+
+    <h2>Preset scenarios</h2>
+    <div class="presets" id="presets" role="group" aria-label="Preset medical spending scenarios"></div>
+    <p id="presetDesc"></p>
+  </section>
+
+  <section class="panel guide" aria-labelledby="guideTitle">
+    <h2 id="guideTitle" style="margin-top:0">Decision guide</h2>
+    <p><b class="p4">Pick Plan 4 (HDHP)</b> if the family is generally healthy and you'll fund an HSA. It has the lowest premium, and the HSA adds tax savings this page doesn't even count.</p>
+    <p><b class="p2">Pick Plan 2</b> if a big medical year is likely (surgery, a new baby) or you value predictability: its worst case is the lowest of all four plans, and past the deductible you pay nothing.</p>
+    <p><b class="p1">Plan 1</b> only makes sense for reliably moderate usage (roughly $5,600&ndash;$14,500 in charges) &mdash; and it beats the others by at most a few hundred dollars there.</p>
+    <div class="never-callout"><b class="p3">Never pick Plan 3.</b> At every spending level from $0 to catastrophic, at least one other plan is cheaper. It combines a mid-range premium with the highest deductible and the highest out-of-pocket ceiling.</div>
+  </section>
+
+  <footer>
+    <b>Assumptions &amp; caveats:</b> premiums assume 26 pay periods per year. This is a simplified family-level model: copay accumulation, prescription tiers, and network differences are ignored (Plan 2&ndash;4 copays treated as negligible; Plan 1 modeled as deductible + 20% coinsurance to the out-of-pocket max). Preventive care is assumed free on all plans. Charges means billed, covered, in-network expenses. Not financial or benefits advice &mdash; check the official plan documents before enrolling.
+  </footer>
+</div>
+
+<footer style="border-top:1px solid var(--line);padding-top:14px">
+  Plain-language summary of the 2026 Cigna medical (Open Access Plus, high-deductible) and dental (Dental Choice, Low) plans. Simplified for quick understanding &mdash; the official plan documents govern. Not benefits or financial advice.
 </footer>
 
 <script>
 "use strict";
 
-// ---------- plan data (hardcoded) ----------
-const PLANS = [
-  { key:"p1", name:"Plan 1", premPP:341.31, annual:8874.06, copay:"$25", coins:"20%",
-    dedFam:2000, dedTxt:"$1,000 / $2,000", oopFam:9000, oopTxt:"$4,500 / $9,000",
-    color:css("--p1"), dash:[] },
-  { key:"p2", name:"Plan 2", premPP:283.50, annual:7371.00, copay:"$30", coins:"0%",
-    dedFam:6000, dedTxt:"$3,000 / $6,000", oopFam:9000, oopTxt:"$4,500 / $9,000",
-    color:css("--p2"), dash:[8,4], badge:["ceiling","Best ceiling / big-year pick"] },
-  { key:"p3", name:"Plan 3", premPP:247.26, annual:6428.76, copay:"$40", coins:"0%",
-    dedFam:14300, dedTxt:"$7,150 / $14,300", oopFam:15200, oopTxt:"$7,600 / $15,200",
-    color:css("--p3"), dash:[2,3], badge:["never","Never optimal"] },
-  { key:"p4", name:"Plan 4 (HDHP)", premPP:229.56, annual:5968.56, copay:"$0", coins:"0%",
-    dedFam:12700, dedTxt:"$6,350 / $12,700", oopFam:12700, oopTxt:"$6,350 / $12,700",
-    color:css("--p4"), dash:[12,4,2,4], badge:["best","Best if healthy (HSA-eligible)"] },
-];
+/* ---------------- tab switching ---------------- */
+const tabs = { cov: document.getElementById("tab-cov"), cmp: document.getElementById("tab-cmp") };
+const views = { cov: document.getElementById("view-cov"), cmp: document.getElementById("view-cmp") };
+const titleEl = document.getElementById("pageTitle");
+const subEl = document.getElementById("pageSub");
+let compareReady = false;
 
-// ---------- cost model ----------
+function showTab(which){
+  for(const k of ["cov","cmp"]){
+    const on = k ---- which;
+    tabs[k].setAttribute("aria-selected", on ? "true" : "false");
+    views[k].hidden = !on;
+  }
+  if(which ---- "cmp"){
+    titleEl.textContent = "Which medical plan for our family of 4?";
+    subEl.textContent = "A tool for comparing plans at enrollment time.";
+    if(!compareReady){ initCompare(); compareReady = true; }
+    else if(chart){ chart.resize(); }
+  }else{
+    titleEl.textContent = "Our 2026 health coverage";
+    subEl.textContent = "A plain-English guide to the medical and dental plans, plus the tool for comparing plans at enrollment.";
+  }
+}
+tabs.cov.addEventListener("click", () => showTab("cov"));
+tabs.cmp.addEventListener("click", () => showTab("cmp"));
+
+/* ---------------- compare tool (built lazily so the hidden chart sizes correctly) ---------------- */
+let chart = null;
+function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#888"; }
+const fmt = n => "$" + Math.round(n).toLocaleString("en-US");
+
+let PLANS, total, slider, chargeVal, note, totalsEl, verdict, scenario = 5000;
+
 function oop(planKey, x){
   switch(planKey){
     case "p1": return Math.min(Math.min(x, 2000) + Math.max(0, 0.20 * (x - 2000)), 9000);
@@ -144,43 +391,74 @@ function oop(planKey, x){
     case "p4": return Math.min(x, 12700);
   }
 }
-const total = (p, x) => p.annual + oop(p.key, x);
 
-const fmt = n => "$" + Math.round(n).toLocaleString("en-US");
+function initCompare(){
+  PLANS = [
+    { key:"p1", name:"Plan 1", premPP:341.31, annual:8874.06, copay:"$25", coins:"20%",
+      dedTxt:"$1,000 / $2,000", oopFam:9000, oopTxt:"$4,500 / $9,000", color:css("--p1"), dash:[] },
+    { key:"p2", name:"Plan 2", premPP:283.50, annual:7371.00, copay:"$30", coins:"0%",
+      dedTxt:"$3,000 / $6,000", oopFam:9000, oopTxt:"$4,500 / $9,000", color:css("--p2"), dash:[8,4], badge:["ceiling","Best ceiling / big-year pick"] },
+    { key:"p3", name:"Plan 3", premPP:247.26, annual:6428.76, copay:"$40", coins:"0%",
+      dedTxt:"$7,150 / $14,300", oopFam:15200, oopTxt:"$7,600 / $15,200", color:css("--p3"), dash:[2,3], badge:["never","Never optimal"] },
+    { key:"p4", name:"Plan 4 (HDHP)", premPP:229.56, annual:5968.56, copay:"$0", coins:"0%",
+      dedTxt:"$6,350 / $12,700", oopFam:12700, oopTxt:"$6,350 / $12,700", color:css("--p4"), dash:[12,4,2,4], badge:["best","Best if healthy (HSA-eligible)"] },
+  ];
+  total = (p, x) => p.annual + oop(p.key, x);
 
-function css(name){
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#888";
+  const cardsEl = document.getElementById("cards");
+  for(const p of PLANS){
+    const worst = p.annual + p.oopFam;
+    const el = document.createElement("div");
+    el.className = "card";
+    el.style.borderTop = "4px solid " + p.color;
+    el.innerHTML = `
+      <h3>${p.name}</h3>
+      ${p.badge ? `<span class="badge ${p.badge[0]}">${p.badge[1]}</span>` : `<span class="badge" style="visibility:hidden">-</span>`}
+      <dl>
+        <div><dt>Premium / pay period</dt><dd>$${p.premPP.toFixed(2)}</dd></div>
+        <div><dt>Annual premium</dt><dd>${fmt(p.annual)}</dd></div>
+        <div><dt>Copay</dt><dd>${p.copay}</dd></div>
+        <div><dt>Coinsurance</dt><dd>${p.coins}</dd></div>
+        <div><dt>Deductible (ind / fam)</dt><dd>${p.dedTxt}</dd></div>
+        <div><dt>OOP max (ind / fam)</dt><dd>${p.oopTxt}</dd></div>
+      </dl>
+      <p class="worst">Worst-case annual total: <b>${fmt(worst)}</b></p>`;
+    cardsEl.appendChild(el);
+  }
+
+  slider = document.getElementById("charges");
+  chargeVal = document.getElementById("chargeVal");
+  note = document.getElementById("note100k");
+  totalsEl = document.getElementById("totals");
+  verdict = document.getElementById("verdict");
+  slider.addEventListener("input", () => { scenario = +slider.value; renderTotals(); });
+
+  const PRESETS = [
+    { amt: 1500,   label:"Healthy year - $1,500",  desc:"Checkups plus a few sick visits." },
+    { amt: 5000,   label:"Moderate - $5,000",      desc:"Stitches, labs, and regular meds." },
+    { amt: 10000,  label:"Rough year - $10,000",   desc:"An ER visit and a broken arm." },
+    { amt: 30000,  label:"Big event - $30,000",    desc:"Surgery or a new baby." },
+    { amt: 100000, label:"Catastrophic - $100,000",desc:"Major hospitalization. Every plan hits its out-of-pocket ceiling, so only the caps matter." },
+  ];
+  const presetsEl = document.getElementById("presets");
+  const presetDesc = document.getElementById("presetDesc");
+  for(const pr of PRESETS){
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = pr.label;
+    b.addEventListener("click", () => {
+      scenario = pr.amt;
+      slider.value = Math.min(pr.amt, +slider.max);
+      presetDesc.textContent = pr.desc;
+      renderTotals();
+    });
+    presetsEl.appendChild(b);
+  }
+
+  buildChart();
+  renderTotals();
+  presetDesc.textContent = "";
 }
-
-// ---------- plan cards ----------
-const cardsEl = document.getElementById("cards");
-for(const p of PLANS){
-  const worst = p.annual + p.oopFam;
-  const el = document.createElement("div");
-  el.className = "card";
-  el.style.borderTop = "4px solid " + p.color;
-  el.innerHTML = `
-    <h3>${p.name}</h3>
-    ${p.badge ? `<span class="badge ${p.badge[0]}">${p.badge[1]}</span>` : `<span class="badge" style="visibility:hidden">-</span>`}
-    <dl>
-      <div><dt>Premium / pay period</dt><dd>$${p.premPP.toFixed(2)}</dd></div>
-      <div><dt>Annual premium</dt><dd>${fmt(p.annual)}</dd></div>
-      <div><dt>Copay</dt><dd>${p.copay}</dd></div>
-      <div><dt>Coinsurance</dt><dd>${p.coins}</dd></div>
-      <div><dt>Deductible (ind / fam)</dt><dd>${p.dedTxt}</dd></div>
-      <div><dt>OOP max (ind / fam)</dt><dd>${p.oopTxt}</dd></div>
-    </dl>
-    <p class="worst">Worst-case annual total: <b>${fmt(worst)}</b></p>`;
-  cardsEl.appendChild(el);
-}
-
-// ---------- scenario state ----------
-let scenario = 5000;   // source of truth; presets may exceed the slider range
-const slider = document.getElementById("charges");
-const chargeVal = document.getElementById("chargeVal");
-const note = document.getElementById("note100k");
-const totalsEl = document.getElementById("totals");
-const verdict = document.getElementById("verdict");
 
 function renderTotals(){
   chargeVal.textContent = fmt(scenario);
@@ -189,14 +467,13 @@ function renderTotals(){
     ? "Showing " + fmt(scenario) + " (beyond the slider range; out-of-pocket caps make the totals flat up here)."
     : "";
 
-  const rows = PLANS.map(p => ({ p, t: total(p, scenario) }))
-                    .sort((a, b) => a.t - b.t);
+  const rows = PLANS.map(p => ({ p, t: total(p, scenario) })).sort((a, b) => a.t - b.t);
   const win = rows[0], second = rows[1];
 
   totalsEl.innerHTML = "";
   for(const p of PLANS){
     const t = total(p, scenario);
-    const isWin = p.key === win.p.key;
+    const isWin = p.key ---- win.p.key;
     const d = document.createElement("div");
     d.className = "tot" + (isWin ? " win" : "");
     d.style.borderTop = "3px solid " + p.color;
@@ -209,32 +486,6 @@ function renderTotals(){
   if(chart){ chart.update("none"); }
 }
 
-slider.addEventListener("input", () => { scenario = +slider.value; renderTotals(); });
-
-// ---------- presets ----------
-const PRESETS = [
-  { amt: 1500,   label:"Healthy year - $1,500",  desc:"Checkups plus a few sick visits." },
-  { amt: 5000,   label:"Moderate - $5,000",      desc:"Stitches, labs, and regular meds." },
-  { amt: 10000,  label:"Rough year - $10,000",   desc:"An ER visit and a broken arm." },
-  { amt: 30000,  label:"Big event - $30,000",    desc:"Surgery or a new baby." },
-  { amt: 100000, label:"Catastrophic - $100,000",desc:"Major hospitalization. Every plan hits its out-of-pocket ceiling, so only the caps matter." },
-];
-const presetsEl = document.getElementById("presets");
-const presetDesc = document.getElementById("presetDesc");
-for(const pr of PRESETS){
-  const b = document.createElement("button");
-  b.type = "button";
-  b.textContent = pr.label;
-  b.addEventListener("click", () => {
-    scenario = pr.amt;
-    slider.value = Math.min(pr.amt, +slider.max);
-    presetDesc.textContent = pr.desc;
-    renderTotals();
-  });
-  presetsEl.appendChild(b);
-}
-
-// ---------- chart ----------
 const CHART_MAX = 40000, STEP = 500;
 const xs = [];
 for(let x = 0; x <= CHART_MAX; x += STEP) xs.push(x);
@@ -245,7 +496,6 @@ function chartColors(){
     ? { grid:"rgba(255,255,255,.08)", tick:"#9aa0b4", marker:"#e8eaf2" }
     : { grid:"rgba(0,0,0,.07)",  tick:"#5a6072", marker:"#16181f" };
 }
-
 const markerPlugin = {
   id: "scenarioMarker",
   afterDatasetsDraw(c){
@@ -255,8 +505,7 @@ const markerPlugin = {
     const ctx = c.ctx;
     ctx.save();
     ctx.strokeStyle = chartColors().marker;
-    ctx.setLineDash([5,4]);
-    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5,4]); ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(px, top); ctx.lineTo(px, bottom); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = chartColors().marker;
@@ -267,8 +516,6 @@ const markerPlugin = {
     ctx.restore();
   }
 };
-
-let chart = null;
 function buildChart(){
   const cc = chartColors();
   if(chart) chart.destroy();
@@ -277,15 +524,9 @@ function buildChart(){
     data: {
       labels: xs,
       datasets: PLANS.map(p => ({
-        label: p.name,
-        data: xs.map(x => total(p, x)),
-        borderColor: p.color,
-        backgroundColor: p.color,
-        borderDash: p.dash,
-        borderWidth: 2.4,
-        pointRadius: 0,
-        pointHitRadius: 8,
-        tension: 0,
+        label: p.name, data: xs.map(x => total(p, x)),
+        borderColor: p.color, backgroundColor: p.color, borderDash: p.dash,
+        borderWidth: 2.4, pointRadius: 0, pointHitRadius: 8, tension: 0,
       })),
     },
     options: {
@@ -294,41 +535,22 @@ function buildChart(){
       scales: {
         x: { type: "linear", min: 0, max: CHART_MAX,
              title: { display: true, text: "Family medical charges ($)", color: cc.tick },
-             ticks: { color: cc.tick, callback: v => "$" + (v/1000) + "k" },
-             grid: { color: cc.grid } },
+             ticks: { color: cc.tick, callback: v => "$" + (v/1000) + "k" }, grid: { color: cc.grid } },
         y: { title: { display: true, text: "Total annual cost ($)", color: cc.tick },
-             ticks: { color: cc.tick, callback: v => "$" + (v/1000) + "k" },
-             grid: { color: cc.grid } },
+             ticks: { color: cc.tick, callback: v => "$" + (v/1000) + "k" }, grid: { color: cc.grid } },
       },
       plugins: {
         legend: { labels: { color: cc.tick, usePointStyle: false } },
-        tooltip: {
-          callbacks: {
-            title: items => "Charges: " + fmt(items[0].parsed.x),
-            label: item => item.dataset.label + ": " + fmt(item.parsed.y),
-          },
-        },
+        tooltip: { callbacks: {
+          title: items => "Charges: " + fmt(items[0].parsed.x),
+          label: item => item.dataset.label + ": " + fmt(item.parsed.y),
+        } },
       },
     },
     plugins: [markerPlugin],
   });
 }
-dark.addEventListener("change", buildChart);
-
-buildChart();
-renderTotals();
-presetDesc.textContent = "";
-
-// console self-test of the spot checks
-(function(){
-  const cases = { 10000: [12474, 13371, 16429, 15969], 30000: [16474, 13371, 20729, 18669] };
-  for(const [x, want] of Object.entries(cases)){
-    PLANS.forEach((p, i) => {
-      const got = Math.round(total(p, +x));
-      if(got !== want[i]) console.error("SPOT CHECK FAIL", p.name, "at", x, "got", got, "want", want[i]);
-    });
-  }
-})();
+dark.addEventListener("change", () => { if(compareReady) buildChart(); });
 </script>
 </body>
 </html>
